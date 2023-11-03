@@ -6,6 +6,7 @@ CREATE TABLE `PaqueteDeVuelo` (
     `imagen` VARCHAR(191) NOT NULL,
     `duracion` INTEGER NOT NULL,
     `precio` DOUBLE NOT NULL,
+    estado Boolean,
 
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;

@@ -1,72 +1,107 @@
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient } from '@prisma/client';
+import multer from 'multer';
+import path from 'path';
 
 const prisma = new PrismaClient();
 
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'carpetaImagenesFormasPago'); // Ruta donde se guardarán las imágenes para formas de pago
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
+  }
+});
+
+const upload = multer({ storage: storage }).single('imagen');
+
 export const getFormapago = async (req, res) => {
-    try {
-        const response = await prisma.formasPago.findMany();
-        res.status(200).json(response);
-    } catch {
-        res.status(500).json({ msg: error.message });
-    }
+  try {
+    const formasPago = await prisma.formasPago.findMany();
+    res.json(formasPago);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener todas las formas de pago.' });
+  }
+};
 
-}
 export const getFormapagoById = async (req, res) => {
-    try {
-        const response = await prisma.formasPago.findUnique({
-            where: {
-                id: Number(req.params.id)
-            }
-        });
-        res.status(200).json(response);
-    } catch {
-        res.status(404).json({ msg: error.message });
+  const { id } = req.params;
+  try {
+    const formaPago = await prisma.formasPago.findUnique({
+      where: { id: parseInt(id) }
+    });
+
+    if (!formaPago) {
+      return res.status(404).json({ error: 'Forma de pago no encontrada' });
     }
 
-}
-export const createFormapago = async (req, res) => {
-    const { descripcion, imagen} = req.body;
+    res.json(formaPago);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener la forma de pago por su ID.' });
+  }
+};
+
+export const createFormapago = (req, res) => {
+  upload(req, res, async (err) => {
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({ error: 'Error al subir la imagen.' });
+    } else if (err) {
+      return res.status(500).json({ error: 'Error en el servidor al subir la imagen.' });
+    }
+
+    const { descripcion} = req.body;
+    const imagen = req.file.path;
 
     try {
-        const paquet = await prisma.formasPago.create({
-            data: {
-                descripcion: descripcion,
-                imagen: imagen
-            }
-        });
-        res.status(201).json(paquet)
+      const nuevaFormaPago = await prisma.formasPago.create({
+        data: {
+          descripcion,
+          imagen,
+        }
+      });
+      res.status(201).json(nuevaFormaPago);
     } catch (error) {
-        res.status(400).json({ msg: error.message });
+      res.status(500).json({ error: 'No se pudo crear la nueva forma de pago.' });
     }
-}
-export const updateFormapago = async (req, res) => {
-    const { descripcion, imagen } = req.body;
+  });
+};
+
+export const updateFormapago = (req, res) => {
+  upload(req, res, async (err) => {
+    if (err instanceof multer.MulterError) {
+      return res.status(400).json({ error: 'Error al subir la imagen.' });
+    } else if (err) {
+      return res.status(500).json({ error: 'Error en el servidor al subir la imagen.' });
+    }
+
+    const { id } = req.params;
+    const { descripcion } = req.body;
+    const imagen = req.file.path;
 
     try {
-        const paquet = await prisma.formasPago.update({
-            where: {
-                id: Number(req.params.id)
-            },
-            data: {
-                descripcion: descripcion,
-                imagen: imagen
-            }
-        });
-        res.status(200).json(paquet)
-    } catch (error) {
-        res.status(400).json({ msg: error.message });
-    }
+      const formaPagoActualizada = await prisma.formasPago.update({
+        where: { id: parseInt(id) },
+        data: {
+          descripcion,
+          imagen,
 
-}
+        }
+      });
+      res.json(formaPagoActualizada);
+    } catch (error) {
+      res.status(500).json({ error: 'Error al actualizar la forma de pago.' });
+    }
+  });
+};
+
 export const deleteFormapago = async (req, res) => {
-    try {
-        const deletedPackage = await prisma.formasPago.delete({
-            where: {
-                id: Number(req.params.id)
-            }
-        });
-        res.status(200).json({ message: `Forma de pago con descripcion: ${deletedPackage.descripcion} eliminado` });
-    } catch (error) {
-        res.status(400).json({ msg: error.message });
-    }
-}
+  const { id } = req.params;
+  try {
+    await prisma.formasPago.delete({
+      where: { id: parseInt(id) }
+    });
+    res.json({ message: 'Forma de pago eliminada correctamente' });
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar la forma de pago por su ID.' });
+  }
+};
