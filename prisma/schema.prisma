@@ -19,12 +19,21 @@ model PaqueteDeVuelo {
   duracion       Int
   precio         Float
   estado         Boolean
-  urlImagen String?
+  urlImagen      String?
 }
 
 model FormasPago {
-  id            Int    @id @default(autoincrement())
-  descripcion   String
-  imagen        String?
-  urlImagen String?
+  id          Int     @id @default(autoincrement())
+  nombre      String
+  descripcion String
+  estado      Boolean
+  imagen      String?
+  urlImagen   String?
+  numero      Int
+  cci         String
+}
+model estado_pago {
+  id          Int      @id @default(autoincrement())
+  nombre      String
+  descripcion String
 }

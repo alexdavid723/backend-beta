@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'carpetaImagenes'); // Ruta donde se guardarán las imágenes
+    cb(null, 'carpetaImagenespaquete'); // Ruta donde se guardarán las imágenes
   },
   filename: function (req, file, cb) {
     cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
@@ -76,7 +76,6 @@ export const createPaquetes = (req, res) => {
     }
   });
 };
-
 export const updatePaquetes = async (req, res) => {
   try {
     const { id } = req.params;
@@ -85,26 +84,42 @@ export const updatePaquetes = async (req, res) => {
     });
 
     if (!paquete) {
-      return res.status(404).json({ error: 'Paquete de vuelo no encontrado' });
+      if (req.file) {
+        fs.unlink(req.file.path, (err) => {
+          if (err) {
+            console.error('Error al eliminar la imagen:', err);
+          }
+        });
+      }
+      return res.status(404).json({ error: 'paquete no encontrado' });
     }
 
-    let imagen = null;
-    let urlImagen = null;
-    if (req.file) {
-      // Lógica para manejar una nueva imagen
-      imagen = req.file.path;
-      urlImagen = `http://localhost:5000/${req.file.filename}`;
-    }
-
-    const updateData = {
+    let updateData = {
       nombre_paquete: req.body.nombre_paquete,
       descripcion: req.body.descripcion,
-      imagen: imagen || paquete.imagen,
-      // ... otros campos que desees actualizar
+      duracion: parseInt(req.body.duracion),
+      precio: parseFloat(req.body.precio),
+      estado: req.body.estado === 'true',
+      // ... otros campos para actualizar
     };
 
-    if (urlImagen) {
-      updateData.urlImagen = urlImagen;
+    if (req.file) {
+      const imagen = req.file.path;
+      const urlImagen = `http://localhost:5000/${req.file.filename}`;
+
+      if (paquete.imagen) {
+        fs.unlink(paquete.imagen, (err) => {
+          if (err) {
+            console.error('Error al eliminar la imagen anterior:', err);
+          }
+        });
+      }
+
+      updateData = {
+        ...updateData,
+        imagen,
+        urlImagen
+      };
     }
 
     const paqueteActualizado = await prisma.paqueteDeVuelo.update({
@@ -112,10 +127,10 @@ export const updatePaquetes = async (req, res) => {
       data: updateData
     });
 
-    res.json(paqueteActualizado); // Respuesta de éxito
+    res.json(paqueteActualizado);
   } catch (error) {
-    console.error('Error al actualizar el paquete de vuelo:', error);
-    res.status(500).json({ error: 'Error al actualizar el paquete de vuelo.' });
+    console.error('Error al actualizar paquete:', error);
+    res.status(500).json({ error: 'Error al actualizar paquete.' });
   }
 };
 

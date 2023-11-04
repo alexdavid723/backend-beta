@@ -7,13 +7,13 @@ import {
     createPaquetes,
     updatePaquetes,
     deletePaquetes
-} from '../controllers/paqueteController.js';
+} from "../controllers/paqueteController.js";
 
 const router = express.Router();
 
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'carpetaImagenes'); // Ruta donde se guardarán las imágenes
+        cb(null, 'carpetaImagenespaquete'); // Ruta donde se guardarán las imágenes
     },
     filename: function (req, file, cb) {
         cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
