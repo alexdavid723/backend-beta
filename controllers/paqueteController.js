@@ -25,6 +25,7 @@ export const getPaquetes = async (req, res) => {
   }
 };
 
+
 export const getPaquetesById = async (req, res) => {
   const { id } = req.params;
   try {
@@ -63,7 +64,9 @@ export const createPaquetes = (req, res) => {
           nombre_paquete,
           descripcion,
           imagen: imagen, // Guardar solo la ruta de la imagen
-          urlImagen: `http://localhost:5000/${req.file.filename}`, // Generar la URL de la imagen si es accesible vía web
+          //para guardar las imagenes se puede hacer que cambie la rut ahacia la ip del emulador
+          //esto lo podemos cambiar a localhost:5000
+          urlImagen: `http://192.168.0.41:5000/${req.file.filename}`, // Generar la URL de la imagen si es accesible vía web
           duracion: parseInt(duracion),
           precio: parseFloat(precio),
           estado: estado === 'true'
@@ -105,7 +108,7 @@ export const updatePaquetes = async (req, res) => {
 
     if (req.file) {
       const imagen = req.file.path;
-      const urlImagen = `http://localhost:5000/${req.file.filename}`;
+      const urlImagen = `http://192.168.0.41:5000/${req.file.filename}`;
 
       if (paquete.imagen) {
         fs.unlink(paquete.imagen, (err) => {

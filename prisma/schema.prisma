@@ -20,6 +20,7 @@ model PaqueteDeVuelo {
   precio         Float
   estado         Boolean
   urlImagen      String?
+  reservas       Reserva[]// Relación de uno a muchos con Reserva
 }
 
 model FormasPago {
@@ -31,9 +32,31 @@ model FormasPago {
   urlImagen   String?
   numero      Int
   cci         String
+  reservas    Reserva[] // Relación de uno a muchos con Reserva
 }
+
 model estado_pago {
-  id          Int      @id @default(autoincrement())
+  id          Int    @id @default(autoincrement())
   nombre      String
   descripcion String
+  reservas    Reserva[]  // Relación de uno a muchos con Reserva
+}
+
+// En lugar de Sequelize, usando Prisma para definir el modelo de usuario
+
+model Reserva {
+  id              Int             @id @default(autoincrement())
+  fechaInicio     DateTime
+  nombreCliente   String
+  cantidadPasajeros Int
+  telefonoCliente String
+  correoCliente   String
+  imagenComprobante String?
+  paqueteDeVuelo  PaqueteDeVuelo  @relation(fields: [paqueteDeVueloId], references: [id])
+  paqueteDeVueloId Int
+  formaPago       FormasPago      @relation(fields: [formaPagoId], references: [id])
+  formaPagoId     Int
+  estadoPago      estado_pago     @relation(fields: [estadoPagoId], references: [id])
+  estadoPagoId    Int 
+  // Relaciones con otras tablas
 }
