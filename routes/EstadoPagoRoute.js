@@ -10,10 +10,10 @@ import {
 
 const router = express.Router();
 
-router.get('/Estado', getEstadosPago);
-router.get('/Estado/:id', getEstadoPagoById);
-router.post('/Estado', createEstadoPago);
-router.put('/Estado/:id', updateEstadoPago);
-router.delete('/Estado/:id', deleteEstadoPago);
+router.get('/estado', getEstadosPago);
+router.get('/estado/:id', getEstadoPagoById);
+router.post('/estado', createEstadoPago);
+router.put('/estado/:id', updateEstadoPago);
+router.delete('/estado/:id', deleteEstadoPago);
 
 export default router;

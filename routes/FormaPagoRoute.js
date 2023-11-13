@@ -23,10 +23,10 @@ const upload = multer({ storage: storage }).single('imagen');
 
 const router = express.Router();
 
-router.get('/Formapago', getFormapago);
-router.get('/Formapago/:id', getFormapagoById);
-router.post('/Formapago', createFormapago);
-router.put('/Formapago/:id', upload, updateFormapago);
-router.delete('/Formapago/:id', deleteFormapago);
+router.get('/formapago', getFormapago);
+router.get('/formapago/:id', getFormapagoById);
+router.post('/formapago', createFormapago);
+router.put('/formapago/:id', upload, updateFormapago);
+router.delete('/formapago/:id', deleteFormapago);
 
 export default router;
