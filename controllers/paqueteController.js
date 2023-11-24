@@ -1,7 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
+import fs from 'fs/promises';
+
 
 const prisma = new PrismaClient();
 
@@ -66,7 +67,7 @@ export const createPaquetes = (req, res) => {
           imagen: imagen, // Guardar solo la ruta de la imagen
           //para guardar las imagenes se puede hacer que cambie la rut ahacia la ip del emulador
           //esto lo podemos cambiar a localhost:5000
-          urlImagen: `http://192.168.0.41:5000/${req.file.filename}`, // Generar la URL de la imagen si es accesible vía web
+          urlImagen: `http://localhost:5000/${req.file.filename}`, // Generar la URL de la imagen si es accesible vía web
           duracion: parseInt(duracion),
           precio: parseFloat(precio),
           estado: estado === 'true'
@@ -108,7 +109,7 @@ export const updatePaquetes = async (req, res) => {
 
     if (req.file) {
       const imagen = req.file.path;
-      const urlImagen = `http://192.168.0.41:5000/${req.file.filename}`;
+      const urlImagen = `http://localhost:5000/${req.file.filename}`;
 
       if (paquete.imagen) {
         fs.unlink(paquete.imagen, (err) => {
@@ -140,6 +141,7 @@ export const updatePaquetes = async (req, res) => {
 
 export const deletePaquetes = async (req, res) => {
   const { id } = req.params;
+
   try {
     const paquete = await prisma.paqueteDeVuelo.findUnique({
       where: { id: parseInt(id) }
@@ -149,16 +151,25 @@ export const deletePaquetes = async (req, res) => {
       return res.status(404).json({ error: 'Paquete de vuelo no encontrado' });
     }
 
-    // Ruta de la imagen asociada al paquete
+    // Verificar si hay reservas asociadas al paquete de vuelo
+    const reservations = await prisma.reserva.findMany({
+      where: { paqueteDeVueloId: parseInt(id) }
+    });
+
+    if (reservations.length > 0) {
+      return res.status(400).json({ error: 'No se puede eliminar el paquete de vuelo ya que tiene reservas asociadas.' });
+    }
+
+    // Ruta de la imagen asociada al paquete de vuelo
     const imagePath = paquete.imagen;
 
     // Eliminar la imagen del sistema de archivos
-    if (imagePath) {
-      fs.unlink(imagePath, (err) => {
-        if (err) {
-          console.error('Error al eliminar la imagen:', err);
-        }
-      });
+    try {
+      if (imagePath) {
+        await fs.unlink(imagePath);
+      }
+    } catch (error) {
+      console.error('Error al eliminar la imagen:', error);
     }
 
     // Eliminar el paquete de vuelo de la base de datos
@@ -166,7 +177,7 @@ export const deletePaquetes = async (req, res) => {
       where: { id: parseInt(id) }
     });
 
-    res.json({ message: 'Paquete de vuelo y su imagen asociada eliminados correctamente' });
+    res.json({ message: 'Paquete de vuelo eliminado correctamente', imagePath: imagePath || 'No hay imagen asociada' });
   } catch (error) {
     res.status(500).json({ error: 'Error al eliminar el paquete de vuelo por su ID.' });
   }

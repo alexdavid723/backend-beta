@@ -1,7 +1,8 @@
 import { PrismaClient } from '@prisma/client';
 import multer from 'multer';
 import path from 'path';
-import fs from 'fs';
+import fs from 'fs/promises';
+
 
 const prisma = new PrismaClient();
 
@@ -146,6 +147,7 @@ export const updateFormapago = async (req, res) => {
 
 export const deleteFormapago = async (req, res) => {
   const { id } = req.params;
+
   try {
     const formaPago = await prisma.formasPago.findUnique({
       where: { id: parseInt(id) }
@@ -155,23 +157,33 @@ export const deleteFormapago = async (req, res) => {
       return res.status(404).json({ error: 'Forma de pago no encontrada' });
     }
 
+    // Verificar si hay reservas asociadas a la forma de pago
+    const reservations = await prisma.reserva.findMany({
+      where: { formaPagoId: parseInt(id) }
+    });
+
+    if (reservations.length > 0) {
+      return res.status(400).json({ error: 'No se puede eliminar la forma de pago ya que tiene reservas asociadas.' });
+    }
+
     // Ruta de la imagen asociada a la forma de pago
     const imagePath = formaPago.imagen;
 
     // Eliminar la imagen del sistema de archivos si existe
-    if (imagePath) {
-      fs.unlink(imagePath, (err) => {
-        if (err) {
-          console.error('Error al eliminar la imagen:', err);
-        }
-      });
+    try {
+      if (imagePath) {
+        await fs.unlink(imagePath);
+      }
+    } catch (error) {
+      console.error('Error al eliminar la imagen:', error);
     }
 
+    // Eliminar la forma de pago
     await prisma.formasPago.delete({
       where: { id: parseInt(id) }
     });
 
-    res.json({ message: 'Forma de pago y su imagen asociada eliminadas correctamente' });
+    res.json({ message: 'Forma de pago eliminada correctamente', imagePath: imagePath || 'No hay imagen asociada' });
   } catch (error) {
     res.status(500).json({ error: 'Error al eliminar la forma de pago por su ID.' });
   }

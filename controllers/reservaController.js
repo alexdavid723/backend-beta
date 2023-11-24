@@ -65,7 +65,7 @@ export const createReserva = (req, res) => {
             return res.status(500).json({ error: 'Error en el servidor al subir las imágenes.' });
         }
 
-        const { fechaInicio, nombreCliente, telefonoCliente, correoCliente, paqueteDeVueloId, formaPagoId, estadoPagoId } = req.body;
+        const { fechaInicio, horaInicio, nombreCliente, telefonoCliente, correoCliente, paqueteDeVueloId, formaPagoId, estadoPagoId } = req.body;
 
         const files = req.files;
 
@@ -75,7 +75,7 @@ export const createReserva = (req, res) => {
         }
 
         try {
-            // Procesar cada archivo
+            
             const imagenesUrls = [];
             for (const file of files) {
                 const uniqueFilename = `${uuidv4()}_${file.originalname}`;
@@ -104,6 +104,7 @@ export const createReserva = (req, res) => {
                             const nuevaReserva = await prisma.reserva.create({
                                 data: {
                                     fechaInicio,
+                                    horaInicio,
                                     nombreCliente,
                                     cantidadPasajeros,
                                     telefonoCliente,
@@ -187,7 +188,7 @@ export const deleteReserva = async (req, res) => {
 
 export const updateReserva = async (req, res) => {
     const { id } = req.params;
-    const { fechaInicio, nombreCliente, cantidadPasajeros, telefonoCliente, correoCliente, paqueteDeVueloId, formaPagoId, estadoPagoId } = req.body;
+    const { fechaInicio, horaInicio, nombreCliente, cantidadPasajeros, telefonoCliente, correoCliente, paqueteDeVueloId, formaPagoId, estadoPagoId } = req.body;
     
     try {
       const reserva = await prisma.reserva.findUnique({
@@ -201,6 +202,7 @@ export const updateReserva = async (req, res) => {
       // Verificar si se proporcionan nuevos IDs para paqueteDeVuelo, formaPago y estadoPago
       const dataToUpdate = {
         fechaInicio,
+        horaInicio,
         nombreCliente,
         cantidadPasajeros,
         telefonoCliente,

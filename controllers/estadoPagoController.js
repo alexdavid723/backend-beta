@@ -72,20 +72,20 @@ export const updateEstadoPago = async (req, res) => {
 export const deleteEstadoPago = async (req, res) => {
   const { id } = req.params;
   try {
-    const estadoPago = await prisma.estado_pago.findUnique({
-      where: { id: parseInt(id) }
-    });
-
-    if (!estadoPago) {
-      return res.status(404).json({ error: 'Estado de pago no encontrado' });
-    }
-
+    // Eliminar el estado de pago incluso si tiene reservas asociadas
     await prisma.estado_pago.delete({
-      where: { id: parseInt(id) }
+      where: { id: parseInt(id) },
+      // Puedes comentar o eliminar esta línea si no necesitas verificar las reservas
+      include: { reservas: true },
     });
 
     res.json({ message: 'Estado de pago eliminado correctamente' });
   } catch (error) {
-    res.status(500).json({ error: 'Error al eliminar el estado de pago por su ID.' });
+    // Verificar si el error se debe a reservas asociadas
+    if (error.code === 'P2003') {
+      res.status(400).json({ error: 'No se puede eliminar el estado de pago ya que tiene reservas asociadas.' });
+    } else {
+      res.status(500).json({ error: 'Error al eliminar el estado de pago por su ID.' });
+    }
   }
 };

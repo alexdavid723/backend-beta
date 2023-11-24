@@ -43,23 +43,25 @@ model estado_pago {
 }
 
 model Reserva {
-  id                Int            @id @default(autoincrement())
-  fechaInicio       DateTime
+  id                Int             @id @default(autoincrement())
+  fechaInicio       DateTime        @db.Date
+  horaInicio        DateTime        @db.Time
   nombreCliente     String
   cantidadPasajeros Int
   telefonoCliente   String
   correoCliente     String
-  paqueteDeVuelo    PaqueteDeVuelo @relation(fields: [paqueteDeVueloId], references: [id])
+  paqueteDeVuelo    PaqueteDeVuelo  @relation(fields: [paqueteDeVueloId], references: [id])
   paqueteDeVueloId  Int
-  formaPago         FormasPago     @relation(fields: [formaPagoId], references: [id])
+  formaPago         FormasPago      @relation(fields: [formaPagoId], references: [id])
   formaPagoId       Int
-  estadoPago        estado_pago    @relation(fields: [estadoPagoId], references: [id])
+  estadoPago        estado_pago     @relation(fields: [estadoPagoId], references: [id])
   estadoPagoId      Int
-  imagenesReserva ImagenReserva[]
+  imagenesReserva   ImagenReserva[]
 }
+
 model ImagenReserva {
-  id            Int      @id @default(autoincrement())
-  reserva       Reserva  @relation(fields: [reservaId], references: [id])
-  reservaId     Int
-  imagenUrl     String
+  id        Int     @id @default(autoincrement())
+  reserva   Reserva @relation(fields: [reservaId], references: [id])
+  reservaId Int
+  imagenUrl String
 }
