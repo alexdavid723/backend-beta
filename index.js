@@ -8,9 +8,13 @@ import FormaPagoRoute from "./routes/FormaPagoRoute.js";
 import EstadoPagoRoute from "./routes/EstadoPagoRoute.js";
 import ReservaRoute from "./routes/ReservaRoute.js";
 import UserRoute from "./routes/imagenReservaRoute.js";
-dotenv.config ();
 
+import moment from "moment-timezone"; // Importa moment-timezone
+
+dotenv.config ();
+moment.tz.setDefault('America/Lima');
 const app = express();
+
 
 app.use(cors());
 app.use(express.json());
@@ -19,6 +23,7 @@ app.use(FormaPagoRoute);
 app.use(EstadoPagoRoute);
 app.use(ReservaRoute);
 app.use(UserRoute);
+
 //hacer visible imagenes dentro de la carptea
 app.use(express.static("carpetaImagenespaquete"));
 app.use(express.static("carpetaimagenesformapago"));

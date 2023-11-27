@@ -66,7 +66,8 @@ export const createReserva = (req, res) => {
         }
 
         const { fechaInicio, horaInicio, nombreCliente, telefonoCliente, correoCliente, paqueteDeVueloId, formaPagoId, estadoPagoId } = req.body;
-
+        const horaInicioISO = new Date(`1970-01-01T${horaInicio}:00.000Z`).toISOString();
+        
         const files = req.files;
 
         if (!files || files.length === 0) {
@@ -104,7 +105,7 @@ export const createReserva = (req, res) => {
                             const nuevaReserva = await prisma.reserva.create({
                                 data: {
                                     fechaInicio,
-                                    horaInicio,
+                                    horaInicio: horaInicioISO,
                                     nombreCliente,
                                     cantidadPasajeros,
                                     telefonoCliente,

@@ -44,8 +44,8 @@ model estado_pago {
 
 model Reserva {
   id                Int             @id @default(autoincrement())
-  fechaInicio       DateTime        @db.Date
-  horaInicio        DateTime        @db.Time
+  fechaInicio       DateTime        
+  horaInicio        DateTime        
   nombreCliente     String
   cantidadPasajeros Int
   telefonoCliente   String
